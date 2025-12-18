@@ -65,7 +65,7 @@ interface CountryFlagProps {
   countryCode: string;
   size?: number;
   className?: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 // React component for rendering country flags

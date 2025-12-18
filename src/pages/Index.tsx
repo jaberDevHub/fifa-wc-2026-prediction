@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { TournamentHeader } from "@/components/TournamentHeader";
 import { InteractiveGroupCard } from "@/components/InteractiveGroupCard";
@@ -272,14 +272,25 @@ const Index = () => {
     { name: "Final", completed: stage === "champion", active: stage === "final" },
   ];
 
+  // Auto-progress to knockout stage when all teams are selected
+  useEffect(() => {
+    if (groupsComplete && stage === "groups") {
+      const timer = setTimeout(() => {
+        setupRound32();
+      }, 1000); // 1 second delay for smooth UX
+      
+      return () => clearTimeout(timer);
+    }
+  }, [groupsComplete, stage, setupRound32]);
+
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-[1800px] mx-auto">
       <TournamentHeader />
 
       <ProgressIndicator stages={progressStages} />
 
-      {/* Controls */}
-      <div className="flex flex-wrap justify-center gap-4 mb-8">
+      {/* Desktop Controls */}
+      <div className="hidden md:flex flex-wrap justify-center gap-4 mb-8">
         {stage === "groups" && (
           <>
             <Button variant="reset" size="lg" onClick={autoSimulate}>
@@ -303,7 +314,7 @@ const Index = () => {
 
       {/* Group Stage */}
       {stage === "groups" && (
-        <section>
+        <section className="pb-24 md:pb-0">
           <h2 className="font-display text-2xl font-bold text-foreground mb-2 flex items-center gap-2">
             <span className="w-2 h-8 bg-primary rounded-full" />
             Select 2 Teams from Each Group
@@ -328,8 +339,37 @@ const Index = () => {
             <p className="text-muted-foreground">
               Selected: <span className="text-primary font-bold">{selectedTeams.length}</span> / 24 teams
             </p>
+            {groupsComplete && (
+              <p className="text-sm text-green-600 mt-2 animate-pulse">
+                🎉 All teams selected! Auto-advancing to knockout stage...
+              </p>
+            )}
           </div>
         </section>
+      )}
+
+      {/* Mobile Floating Controls */}
+      {stage === "groups" && (
+        <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t border-border p-4 md:hidden">
+          <div className="flex flex-col gap-3 max-w-md mx-auto">
+            <div className="flex gap-2">
+              <Button variant="outline" size="lg" onClick={autoSimulate} className="flex-1">
+                <Zap className="w-4 h-4" />
+                Auto Pick
+              </Button>
+              {groupsComplete && (
+                <Button variant="simulate" size="lg" onClick={setupRound32} className="flex-1">
+                  <ChevronRight className="w-4 h-4" />
+                  Start Knockout
+                </Button>
+              )}
+            </div>
+            <Button variant="reset" size="lg" onClick={reset} className="w-full">
+              <RefreshCw className="w-4 h-4" />
+              Reset Tournament
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Round of 32 */}
@@ -516,9 +556,16 @@ const Index = () => {
       {/* Footer */}
       <footer className="text-center mt-16 py-8 border-t border-border">
         <p className="text-muted-foreground text-sm">
-          FIFA World Cup 2026 Bracket Predictor 
-        </p> <a href="https://jaberdevhub.com" class="text-sm text-yellow-500"> Developed by: @jaberdevhub</a>
+          FIFA World Cup 2026 Bracket Predictor
+        </p> <a href="https://jaberdevhub.com" className="text-sm text-yellow-500"> Developed by: @jaberdevhub</a>
       </footer>
+
+      {/* Mobile Reset Button - Always Visible */}
+      <div className="fixed top-4 right-4 md:hidden z-50">
+        <Button variant="reset" size="sm" onClick={reset} className="shadow-lg">
+          <RefreshCw className="w-4 h-4" />
+        </Button>
+      </div>
     </div>
   );
 };
