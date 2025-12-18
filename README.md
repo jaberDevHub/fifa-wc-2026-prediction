@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # 🏆 FIFA World Cup 2026 Bracket Predictor ⚽
 
 <div align="center">
